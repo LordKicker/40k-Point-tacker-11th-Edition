@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>W40K 11th Ed - Match Generator & Tracker</title>
+    <style>
+        :root {
+            --bg-color: #12161a;
+            --card-bg: #1c232a;
+            --text-color: #f0f4f8;
+            --accent-gold: #c5a059;
+            --p1-color: #3b82f6;
+            --p2-color: #ef4444;
+            --atk-theme: #b45309;
+            --def-theme: #047857;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--accent-gold);
+            padding-bottom: 10px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            color: var(--accent-gold);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+        }
+
+        .step { display: none; }
+        .step.active { display: flex; flex-direction: column; gap: 20px; }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: var(--accent-gold);
+            border-bottom: 1px solid #334155;
+            padding-bottom: 8px;
+        }
+
+        .player-box {
+            background: #1e293b;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 5px solid var(--text-color);
+        }
+        .player-box.p1 { border-left-color: var(--p1-color); }
+        .player-box.p2 { border-left-color: var(--p2-color); }
+
+        .name-input {
+            width: 100%;
+            padding: 10px;
+            background: #0f172a;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            box-sizing: border-box;
+        }
+        .name-input:focus {
+            border-color: var(--accent-gold);
+            outline: none;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            background: #0f172a;
+            border: 1px solid var(--accent-gold);
+            color: white;
+            border-radius: 4px;
+            font-size: 1rem;
+            margin-top: 8px;
+            cursor: pointer;
+        }
+
+        .btn {
+            background-color: var(--accent-gold);
+            color: #000;
+            font-size: 1.1rem;
+            font-weight: bold;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-secondary {
+            background-color: #334155;
+            color: white;
+            border: 1px solid #475569;
+        }
+
+        .btn-guide {
+            background-color: transparent;
+            color: var(--accent-gold);
+            border: 1px solid var(--accent-gold);
+            padding: 10px;
+            font-size: 0.95rem;
+            margin-bottom: 5px;
+        }
+        .btn-guide:hover {
+            background: rgba(197, 160, 89, 0.1);
+        }
+
+        .guide-box {
+            background: #0f172a;
+            border: 1px solid var(--accent-gold);
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        .guide-box h3 {
+            margin-top: 0;
+            color: var(--accent-gold);
+            font-size: 1.1rem;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+        }
+        .guide-steps {
+            padding-left: 20px;
+            margin: 10px 0;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .guide-steps li {
+            margin-bottom: 8px;
+        }
+        .guide-steps strong {
+            color: var(--accent-gold);
+        }
+
+        .result-display {
+            background: #0f172a;
+            border: 1px dashed var(--accent-gold);
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: var(--text-color);
+            margin: 10px 0;
+            text-align: left;
+            line-height: 1.5;
+        }
+        .result-display span {
+            color: var(--accent-gold);
+        }
+        .mission-rule-preview {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: normal;
+            color: #cbd5e1;
+            margin-top: 4px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+
+        .deployment-preview-box {
+            width: 100%;
+            max-height: 250px;
+            margin-top: 10px;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #0f172a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .deployment-img {
+            max-width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            display: block;
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 15px;
+            background: #334155;
+            color: white;
+            border: 2px solid transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .role-btn.selected.attacker { background: var(--atk-theme); border-color: var(--accent-gold); }
+        .role-btn.selected.defender { background: var(--def-theme); border-color: var(--accent-gold); }
+
+        .match-info-hub {
+            background: #0f172a;
+            border: 1px solid var(--accent-gold);
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .match-info-line { font-size: 0.9rem; }
+        .match-info-line span { color: var(--accent-gold); font-weight: bold; }
+
+        .btn-hub-info {
+            background-color: #232e3f;
+            color: var(--accent-gold);
+            border: 1px solid #475569;
+            padding: 6px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+        .btn-hub-info:hover { background-color: #2e3d54; }
+
+        .hub-details-box {
+            background: #151f2e;
+            border: 1px solid var(--accent-gold);
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            margin-top: 5px;
+        }
+        .hub-details-box h4 {
+            margin: 10px 0 5px 0;
+            color: var(--accent-gold);
+            font-size: 0.95rem;
+        }
+        .hub-details-box h4:first-child { margin-top: 0; }
+        .hub-details-box p { margin: 0 0 10px 0; color: #cbd5e1; }
+        .hub-details-box p:last-child { margin-bottom: 0; }
+
+        .round-tracker-box {
+            background: #1e293b;
+            border: 2px solid var(--accent-gold);
+            border-radius: 6px;
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .round-title { font-weight: bold; letter-spacing: 1px; font-size: 1.1rem; }
+        .round-title span { color: var(--accent-gold); font-size: 1.4rem; }
+        .round-controls { display: flex; gap: 8px; }
+        .round-btn {
+            background: #0f172a; color: white; border: 1px solid #475569;
+            padding: 6px 12px; font-weight: bold; border-radius: 4px; cursor: pointer;
+        }
+        .round-btn:active { background: #334155; }
+
+        .players-container { display: flex; flex-direction: column; gap: 20px; }
+        
+        .player-card {
+            background: #1e293b;
+            border-radius: 6px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            border-top: 5px solid white;
+        }
+        .player-card.attacker-card { border-top-color: var(--atk-theme); }
+        .player-card.defender-card { border-top-color: var(--def-theme); }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .total-score-box {
+            background: #0f172a;
+            border: 1px solid var(--accent-gold);
+            padding: 6px 12px;
+            border-radius: 4px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        .total-score-box span { color: var(--accent-gold); font-size: 1.3rem; }
+
+        .counters-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .counter-row-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #0f172a;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .counter-label { font-size: 0.9rem; color: #94a3b8; font-weight: bold; }
+        .counter-controls { display: flex; align-items: center; gap: 10px; }
+        .counter-value { font-size: 1.4rem; font-weight: bold; min-width: 30px; text-align: center; }
+
+        .ctrl-btn {
+            background: #334155; color: white; border: none; 
+            width: 32px; height: 32px;
+            font-size: 1.2rem; font-weight: bold; border-radius: 4px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .secondary-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 4px;
+            padding: 10px;
+        }
+        .secondary-title {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .drawn-cards-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+        .mission-card-wrapper { display: flex; flex-direction: column; gap: 4px; }
+
+        .mission-card-badge {
+            background: #232e3f;
+            border-left: 3px solid var(--accent-gold);
+            padding: 8px 10px;
+            border-radius: 3px;
+            font-size: 0.9rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+        }
+        .mission-card-badge:hover { background: #2e3d54; }
+        
+        .card-action-group {
+            display: flex;
+            gap: 5px;
+        }
+
+        .discard-btn {
+            background: #7f1d1d; color: white; border: none;
+            padding: 4px 8px; font-size: 0.75rem; border-radius: 3px; cursor: pointer;
+        }
+        .discard-btn:hover { background: #991b1b; }
+        
+        .shuffle-back-btn {
+            background: #1e3a8a; color: white; border: none;
+            padding: 4px 8px; font-size: 0.75rem; border-radius: 3px; cursor: pointer;
+        }
+        .shuffle-back-btn:hover { background: #1e40af; }
+
+        .sm-btn { padding: 6px 12px; font-size: 0.85rem; }
+        .reset-btn { background: #7f1d1d; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; margin-top: 15px;}
+        .mission-details-box {
+            background: #151f2e;
+            border: 1px solid #334155;
+            padding: 10px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            color: #cbd5e1;
+            border-radius: 0 0 4px 4px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>WARHAMMER 40K — 11TH ED</h1>
+    </header>
+
+    <div class="container">
+        
+        <!-- STEP 1: FORCE DISPOSITION -->
+        <div id="step-1" class="step active">
+            <h2>Step 1: Setup Players & Force Disposition</h2>
+            
+            <button class="btn btn-guide" id="guide-toggle-btn" onclick="toggleGuide()">📖 Quick Guide: Get Started</button>
+            
+            <div class="guide-box" id="guide-content" style="display: none;">
+                <h3>Step-by-Step Instructions</h3>
+                <ol class="guide-steps">
+                    <li><strong>Enter Names & Force Disposition:</strong> Set player names and tactical configurations. The combined choices instantly generate a unique Primary Mission for each player!</li>
+                    <li><strong>Generate Deployment:</strong> On the next screen, randomize your deployment zone layout and check the visual map outline.</li>
+                    <li><strong>Assign Roles:</strong> Roll off to determine who assumes the role of <strong>Attacker</strong> versus <strong>Defender</strong>.</li>
+                    <li><strong>Track the Match:</strong> Monitor your <strong>CP</strong> counts, advance through the <strong>Battle Rounds</strong>, and update scores independently for <strong>Primary</strong> and <strong>Secondary VP</strong>.</li>
+                    <li><strong>Tactical Secondary Objectives:</strong> Click <em>"Draw Tactical Card"</em>. <strong>Click directly on the drawn card's title</strong> to expand detailed rules and score requirements!</li>
+                </ol>
+                <button class="btn btn-secondary sm-btn" style="width: 100%;" onclick="toggleGuide()">Close Guide</button>
+            </div>
+
+            <div class="player-box p1">
+                <strong>Player 1 Name:</strong>
+                <input type="text" id="p1-name" class="name-input" placeholder="Player 1" value="Player 1">
+                <strong>Force Disposition:</strong>
+                <select id="p1-disp">
+                    <option value="Take and hold">Take and hold</option>
+                    <option value="Purge the foe">Purge the foe</option>
+                    <option value="Disruption">Disruption</option>
+                    <option value="Reconnaissance">Reconnaissance</option>
+                    <option value="Priority Assets">Priority Assets</option>
+                </select>
+            </div>
+            <div class="player-box p2">
+                <strong>Player 2 Name:</strong>
+                <input type="text" id="p2-name" class="name-input" placeholder="Player 2" value="Player 2">
+                <strong>Force Disposition:</strong>
+                <select id="p2-disp">
+                    <option value="Take and hold">Take and hold</option>
+                    <option value="Purge the foe">Purge the foe</option>
+                    <option value="Disruption">Disruption</option>
+                    <option value="Reconnaissance">Reconnaissance</option>
+                    <option value="Priority Assets">Priority Assets</option>
+                </select>
+            </div>
+            <button class="btn" onclick="goToStep2()">Confirm Choices</button>
+        </div>
+
+        <!-- STEP 2: MISSION & DEPLOYMENT -->
+        <div id="step-2" class="step">
+            <h2>Step 2: Calculated Mission Objectives</h2>
+            <div>
+                <small style="color:#94a3b8">Based on your selections, your player-specific Primary Missions are:</small>
+                <div class="result-display" id="mission-result">
+                    🔵 <strong id="preview-p1-label">Player 1 Primary:</strong> <span id="preview-p1-mission">-</span>
+                    <span class="mission-rule-preview" id="preview-p1-rule"></span>
+                    
+                    🔴 <strong id="preview-p2-label">Player 2 Primary:</strong> <span id="preview-p2-mission">-</span>
+                    <span class="mission-rule-preview" id="preview-p2-rule"></span>
+                </div>
+            </div>
+            <hr style="border-color: #334155; width:100%;">
+            <div>
+                <label style="color:#94a3b8; display:block; margin-bottom:5px;">Generate Deployment:</label>
+                <button class="btn btn-secondary" style="width:100%;" onclick="rollDeployment()">🎲 Randomize Deployment (1-6)</button>
+				
+				<div style="text-align: center; margin-top: 10px;">
+					<label style="cursor: pointer; color: #cbd5e1; font-size: 0.95rem;">
+						<input type="checkbox" id="enableTwists" checked /> Include Random Environmental Twist
+					</label>
+				</div>
+	
+                <div class="result-display" style="text-align:center;" id="deployment-result">Click to roll...</div>
+                
+                <!-- Twist displays neatly right here beneath the deployment result -->
+                <div id="twistDisplay" style="color: #ffcc00; font-weight: bold; text-align: center; margin: 10px 0; font-size: 1.1rem;"></div>
+
+                <div class="deployment-preview-box" id="step2-image-box" style="display: none;">
+                    <img id="step2-deployment-img" src="" alt="Deployment Map" class="deployment-img">
+                </div>
+            </div>
+            <button class="btn" id="to-step-3-btn" onclick="goToStep3()" style="display:none; margin-top:15px;">Proceed to Role Assignment</button>
+        </div>
+
+        <!-- STEP 3: ATTACKER / DEFENDER -->
+        <div id="step-3" class="step">
+            <h2>Step 3: Assign Attacker & Defender Roles</h2>
+            <p style="font-size:0.9rem; color:#94a3b8; margin:0;">Roll off to assign battlefield roles. This determines your deployment rules and scorecard colors:</p>
+            
+            <div class="role-selector">
+                <button id="p1-is-atk-btn" class="role-btn" onclick="setRoles(true)">Player 1 is Attacker<br><small>Player 2 becomes Def</small></button>
+                <button id="p2-is-atk-btn" class="role-btn" onclick="setRoles(false)">Player 2 is Attacker<br><small>Player 1 becomes Def</small></button>
+            </div>
+
+            <button class="btn" id="start-match-btn" onclick="startMatch()" style="display:none; margin-top:10px;">Start Match! ⚔️</button>
+        </div>
+
+        <!-- STEP 4: ACTIVE PLAY SCREEN -->
+        <div id="step-4" class="step">
+            <h2>Battlefield Live Tracker</h2>
+            
+            <div class="match-info-hub">
+                <div class="match-info-line">🔵 <span id="hub-p1-label">P1</span> Primary: <span id="hub-p1-mission">-</span></div>
+                <div class="match-info-line">🔴 <span id="hub-p2-label">P2</span> Primary: <span id="hub-p2-mission">-</span></div>
+                <div class="match-info-line">🗺️ Deployment: <span id="hub-deploy">-</span></div>
+                <div class="match-info-line" id="hub-twist-line" style="display: none;">🌪️ Twist: <span id="hub-twist-title">-</span></div>
+                
+                <button class="btn-hub-info" id="hub-info-btn" onclick="toggleHubMatchInfo()">📋 Show Info & Rules (inc. Map)</button>
+                
+                <div class="hub-details-box" id="hub-info-details" style="display: none;">
+                    <div id="hub-twist-details-box" style="display: none;">
+                        <h4>🌪️ Active Battlefield Twist:</h4>
+                        <p id="hub-twist-rule-text">None</p>
+                    </div>
+
+                    <h4>🔵 <span id="hub-details-p1-name">Player 1</span> Primary Info:</h4>
+                    <p id="hub-p1-mission-rule-text">Loading objective rules...</p>
+
+                    <h4>🔴 <span id="hub-details-p2-name">Player 2</span> Primary Info:</h4>
+                    <p id="hub-p2-mission-rule-text">Loading objective rules...</p>
+                    
+                    <h4>🗺️ Deployment Map & Details:</h4>
+                    <p id="hub-deploy-rule-text">Loading configuration...</p>
+                    
+                    <div class="deployment-preview-box" style="margin-top:10px;">
+                        <img id="hub-deployment-img" src="" alt="Deployment Map" class="deployment-img">
+                    </div>
+                </div>
+            </div>
+
+            <!-- CENTRAL ROUND TRACKER -->
+            <div class="round-tracker-box">
+                <div class="round-title">BATTLE ROUND: <span id="current-round">1</span> / 5</div>
+                <div class="round-controls">
+                    <button class="round-btn" onclick="changeRound(-1)">-</button>
+                    <button class="round-btn" onclick="changeRound(1)">Next Round ➔</button>
+                </div>
+            </div>
+
+            <div class="players-container">
+                <!-- Attacker Card -->
+                <div class="player-card attacker-card">
+                    <div class="player-header">
+                        <div>
+                            <strong style="color:var(--atk-theme); font-size:1.1rem;">ATTACKER</strong>
+                            <div id="match-atk-name" style="font-size:0.85rem; font-weight:bold; color:#94a3b8;">-</div>
+                        </div>
+                        <small id="match-atk-disp" style="font-style:italic; color:var(--accent-gold); font-size:0.85rem;">-</small>
+                    </div>
+
+                    <div class="total-score-box">
+                        TOTAL VP: <span id="atk-total-vp">0</span>
+                    </div>
+                    
+                    <div class="counters-grid">
+                        <!-- CP -->
+                        <div class="counter-row-item">
+                            <span class="counter-label">Command Points (CP)</span>
+                            <div class="counter-controls">
+                                <button class="ctrl-btn" onclick="changeVal('atk', 'cp', -1)">-</button>
+                                <div class="counter-value" id="atk-cp">0</div>
+                                <button class="ctrl-btn" onclick="changeVal('atk', 'cp', 1)">+</button>
+                            </div>
+                        </div>
+                        <!-- PRIMARY VP -->
+                        <div class="counter-row-item">
+                            <span class="counter-label" style="color: #60a5fa;" id="atk-card-mission-title">Primary VP</span>
+                            <div class="counter-controls">
+                                <button class="ctrl-btn" onclick="changeVal('atk', 'primary', -1)">-</button>
+                                <div class="counter-value" id="atk-primary">0</div>
+                                <button class="ctrl-btn" onclick="changeVal('atk', 'primary', 1)">+</button>
+                            </div>
+                        </div>
+                        <!-- SECONDARY VP -->
+                        <div class="counter-row-item">
+                            <span class="counter-label" style="color: #f43f5e;">Secondary VP</span>
+                            <div class="counter-controls">
+                                <button class="ctrl-btn" onclick="changeVal('atk', 'secondary', -1)">-</button>
+                                <div class="counter-value" id="atk-secondary">0</div>
+                                <button class="ctrl-btn" onclick="changeVal('atk', 'secondary', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="secondary-box">
+                        <div class="secondary-title">Secondary Missions</div>
+                        <button class="btn btn-secondary sm-btn" onclick="drawSecondary('atk')">🎴 Draw Tactical Card</button>
+                        <div class="drawn-cards-list" id="atk-secondaries"></div>
+                    </div>
+                </div>
+
+                <!-- Defender Card -->
+                <div class="player-card defender-card">
+                    <div class="player-header">
+                        <div>
+                            <strong style="color:var(--def-theme); font-size:1.1rem;">DEFENDER</strong>
+                            <div id="match-def-name" style="font-size:0.85rem; font-weight:bold; color:#94a3b8;">-</div>
+                        </div>
+                        <small id="match-def-disp" style="font-style:italic; color:var(--accent-gold); font-size:0.85rem;">-</small>
+                    </div>
+
+                    <div class="total-score-box">
+                        TOTAL VP: <span id="def-total-vp">0</span>
+                    </div>
+                    
+                    <div class="counters-grid">
+                        <!-- CP -->
+                        <div class="counter-row-item">
+                            <span class="counter-label">Command Points (CP)</span>
+                            <div class="counter-controls">
+                                <button class="ctrl-btn" onclick="changeVal('def', 'cp', -1)">-</button>
+                                <div class="counter-value" id="def-cp">0</div>
+                                <button class="ctrl-btn" onclick="changeVal('def', 'cp', 1)">+</button>
+                            </div>
+                        </div>
+                        <!-- PRIMARY VP -->
+                        <div class="counter-row-item">
+                            <span class="counter-label" style="color: #60a5fa;" id="def-card-mission-title">Primary VP</span>
+                            <div class="counter-controls">
+                                <button class="ctrl-btn" onclick="changeVal('def', 'primary', -1)">-</button>
+                                <div class="counter-value" id="def-primary">0</div>
+                                <button class="ctrl-btn" onclick="changeVal('def', 'primary', 1)">+</button>
+                            </div>
+                        </div>
+                        <!-- SECONDARY VP -->
+                        <div class="counter-row-item">
+                            <span class="counter-label" style="color: #f43f5e;">Secondary VP</span>
+                            <div class="counter-controls">
+                                <button class="ctrl-btn" onclick="changeVal('def', 'secondary', -1)">-</button>
+                                <div class="counter-value" id="def-secondary">0</div>
+                                <button class="ctrl-btn" onclick="changeVal('def', 'secondary', 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="secondary-box">
+                        <div class="secondary-title">Secondary Missions</div>
+                        <button class="btn btn-secondary sm-btn" onclick="drawSecondary('def')">🎴 Draw Tactical Card</button>
+                        <div class="drawn-cards-list" id="def-secondaries"></div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="reset-btn" onclick="resetApp()">Reset Tracker & New Match</button>
+        </div>
+
+    </div>
+
+    <script>
+        let p1Name = "Player 1", p2Name = "Player 2";
+        let p1Choice = "", p2Choice = "";
+        let finalP1Mission = "";
+        let finalP2Mission = "";
+        let finalDeployment = "";
+        let finalTwistText = ""; 
+        let finalTwistTitle = ""; 
+        let p1IsAttacker = null; 
+        let currentRound = 1; 
+
+        let scores = {
+            atk: { cp: 0, primary: 0, secondary: 0 },
+            def: { cp: 0, primary: 0, secondary: 0 }
+        };
+
+        const primaryRulesData = {
+			"Battlefield Dominance": "<strong>First and Second Battle Round:</strong><br><br> At the end of your turn if you control more objectives then your opponent you score <strong>2VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br><br> at the end of your command phase you score <strong>3VP</strong> for each objective you controlan an extra <strong>2VP</strong> for each objective you Control (excluding you home objective) if you control your home objective",
+			"Immovable Object": "<strong>Any batte round:</strong><br> At the end of your turn if you control one or more central objectives you score <strong>3VP</strong>.<br> <br><strong>Second to fourth batte round:</strong><br> at the end of your command phase you score <strong>5VP</strong> for each objective you control (excluding your home objective). <br><strong>Fifth batte round:</strong><br> at the end of your turn you score <strong>5VP</strong> for each objective you control (excluding your home objective).",
+			"Determined Acquisition": "<strong>Any batte round:</strong><br> For each objective you control that you did not control at the start of the turn (Excluding your home objective) youscore <strong>2VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> at the end of your command phase (or end of your turn in thr fifth battle round) For each objective you control you get <strong>3VP</strong> and an extra <strong>3VP</strong> for each that you hold whitin your opponent's territory",
+			"Purge And Secure": "<strong>Any batte round:</strong><br> At the end of your turn if one or more enemy units were destroyed this turn by a friendly unit that was within range of one or more objectives you score <strong>3VP</strong>.<br> Or one or more enemy unite that started the turn within range of one or more objectives were destroyed this turn you get <strong>3VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) for each objective you control (excluding your home objective) you score <strong>4VP</strong>.<br> At the end of your turn if you control one or more objectives you did not control at the start of the turn (excluding your home objective) you score <strong>3VP</strong>",
+			"Inescapable Dominion": "<strong>Any batte round:</strong><br> At the end of your turn if you control three or more objectives you score <strong>4VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn if its the fifth batte round) if you control two or more objectives you score <strong>5VP</strong>.<br> If you control more objectives then your opponent you score <strong>4VP</strong>.<br> <br><strong>End of battle:</strong><br> If you control your opponent's home objective you score <strong>5VP</strong>",
+			"Unstoppable Force": "<strong>Any batte round:</strong><br> At the end of your turn if one or mor enemy units were destroyed this turn you score <strong>3VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) for each objective you control (excluding your home objective) you score <strong>4VP</strong>.<br> At the end of your turn if you control one or more objectives you did not control at the start of the turn (excluding your home objective) you score <strong>3VP</strong>.<br> <br><strong>End of the battle:</strong><br> If you control one or more central objectives you score <strong>5VP</strong>",
+			"Meatgrinder": "<strong>Any batte round:</strong><br> At the end of your turn if one or more enemy units where destroyed this turn you score <strong>3VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your turn if more enemy units were destroyed this turn then friendly units were destroyed in the previous turn you score <strong>5VP</strong>.<br> If you control your opponent's home objective you score <strong>5VP</strong>",
+			"Punishment": "<strong>Start of your turn:</strong><br> Select one to three enemy units that are on the battlefild and within range of objectives and/or that destroyed one or more friendly unites in the previous turn. if you cannot, select one enemy unite that is on the battlefield. until the start of your next turn, those units are condemned. <br><strong>Any Battle Round:</strong><br> At the end of your turn if one or more condemned enemy units left the battlefield this turn you score <strong>5VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> If you control more objectives then your opponent you score <strong>5VP</strong>.<br> <br><strong>End of the battle:</strong><br> If you control your opponent's home objective you score <strong>8VP</strong>",
+			"Consecrate": "Each time a friendly unite destroys a unit, that friendly unite becomes a consecration unite. At the end of your turn, for each of your consecration unit, you can select one objective it is within range of (excluding your home objective) that has not been consecrated. If you do, place one of your operation markers within range of that objective - that objective is consecrated and that unite is no longer a consecration unit. <br><strong>Any Battle Round:</strong><br> At the end of your turn if one or two objectives are consecrated you score <strong>3VP</strong> or if Three or more objectives are consecrated you score <strong>6VP</strong> instead. <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> If you control more objectives then your opponent you score <strong>4VP</strong>.<br> <br><strong>End of the battle:</strong><br> If your opponent's home objective is consecrated you score <strong>5VP</strong>.",
+			"Destroyer's Wrath": "<strong>Any battle round:</strong><br> If one or mor enemy units were destroyed this turn you score <strong>3VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> If you control more objectives then your opponent you score <strong>6VP</strong>.<br> At the end of your turn if more enemy units were destroyed this turn then friendly units were destroyed in the previous turn you score <strong>4VP</strong>.",
+			"Death Trap": "At the start of your shooting phase one friendly unit within range of an objective (Excluding your home objective) or within one terrain area that is not within your deployment zone, that you have not yet trapped can mark that area as trapped by placing one of your operation markers on in (each unit that start this action this phase must be within a diffrent terrain area). <br><strong>Any batte round:</strong><br> At the end of your turn for each terrain area trapped this turn you score <strong>2VP</strong> and if a terrain areas is also an objective you score an extra <strong>3VP</strong>.<br> <br><strong>Any batte round:</strong><br> At the end of your turn if one or more enemy units that started the turn within a terrain area were destroyed, if that terrain area is trapped you score <strong>3VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.",
+			"Delaying Action": "<strong>Any batte round:</strong><br> At the end of your turn for each enemy unit destroyed this turn you score <strong>2VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> At the end of your turn if you control one or more central objectives and one or more expansion objectives you score <strong>3VP</strong>",
+			"Outmanoeuvre": "<strong>Any batte round:</strong><br> At the end of your turn if you control your opponent's home objective you score <strong>10VP</strong>.<br> <br><strong>First batte round:</strong><br> At the end of your turn for each objective you control (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>Second and Third Battle Round:</strong><br> At the end of your command phase for each objective you control (excluding your home objective) you score <strong>5VP</strong>.<br> <br><strong>Forth Battle Round onwards:</strong><br> At the end of your turn for each objective you control (excluding your home objective) you score <strong>6VP</strong>",
+			"Smoke And Mirrors": "At the start of your shooting phase one friendly unit within range of an objective (Excluding your home objective) that is not decoyed then each unit can do this action this phase if your unit conrols that objective then that objective will be decoyed, place one of your operation markers within range of that objective. <br><strong>Any batte round:</strong><br> At the end of your turn for each objective that is decoyed you score <strong>2VP</strong> and anextra <strong>2VP</strong> for each of those objectives that is in your opponent's territory. <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>End of the battle:</strong><br> If four or more objectives are decoyed you score <strong>10VP</strong>.",
+			"Locate And Deny": "At the start od the battle select five terrain areas not within your deployment zone; for each one, place one of your operation markers within it. At the start of your shooting phase one friendly unit within range of one central objective can once per turn preform a sensory sweep and remove one operation marker this action is compleated at the end of your turn. A unite cannot start this action if there is only one operation marker on the battlefield. <br><strong>Any batte round:</strong><br> At the end of your turn if one or more enemy unites that started the turn within range of one or more objectives are destroyed you score <strong>4VP</strong>.<br> If only one of your operation markers is on the battlefield and one or more of your units are within the same tarrain area as the marker, and no enemy units are within that terrain area you score <strong>4VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>End of the battle:</strong><br> If one of your operation markers is on the battlefield and one or more of your units are within the same terrain area as that marker, and no enemy units are within that terrain area you score <strong>5VP</strong>.",
+			"Reconnaissance Sweep": "<strong>Any battle round:</strong><br> At the end of your turn if three or more friendly units are wholly within three diffrent table quarters and not within 6 inches of the center of the battlefield you score <strong>3VP</strong>, or if four or more friendly units are whholly within four diffrent table quarters and not within 6 inches of the center of the battlefield you score <strong>6VP</strong>.<br> <br><strong>Any battle round:</strong><br> At the end of your turn for each enemy unit destroyed this turn you score <strong>1VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) if you control one or more objectives (excluding your home objective) you score <strong>3VP</strong>,",
+			"Triangulation": "At the start of your shooting phase, from the second batte round onwards. One friendly unite within range of one objective (Excluding your home objective) can once per turn mark that objective as triangulated at the end of your turn if that unit controls that objective and if you do so place an operater marker on it. <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your turn if one objective is triangulated you score <strong>3VP</strong> or if two objectives are triangulated you score <strong>6VP</strong> or if three or more objectives are triangulated you score <strong>10VP</strong>.<br> <br><strong>End of the battle:</strong><br> If you control four or more objectives you score <strong>10VP</strong>.",
+			"Surveil The Foe": "In your shooting phase you can select one friendly unit and then select one enemy unit within 18 inches and visable to your unit that has not been surveilled this turn, until the end of the turn, that unit is surveilled. <br><strong>Any battle round:</strong><br> At the end of your turn if one or more units were surveilled this turn, unless each of those units is within range of one or more objectivethat have one or more operater markers within range of them you score <strong>4VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> If you control more objectives then your opponent you score <strong>4VP</strong>.<br> At the end of your turn if none of your opponents operation markers are on the battlefield you score <strong>5VP</strong>.",
+			"Gather Intel": "In your shooting phase, from the second batte round onwards. one unite witin range of one objective (Excluding your home objective) that does not have any of your operation markers whitin it. Each unit that starts this action this phase must be witin range of a diffrent objective. the action is compleated by the end of your turn, ifyour unite controls that objective. If it's compleated place one of your operation markers within range of that objective. <br><strong>First battle round:</strong><br> At the end of your turn if you control one or more central objectives you score <strong>6VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your turn for each friendly unite that compleated the extract intelligence action this turn you score <strong>7VP</strong>.<br> <br><strong>End of the battle:</strong><br> If three or more of your operation markers are on the battlefield you score <strong>5VP</strong>.<br> If one or more of your operation markers is within range of your opponent's home objective you score <strong>5VP</strong>.",
+			"Search And Scour": "<strong>Any batte round:</strong><br> At the end of your turn if you control one or more central objectives you score <strong>3VP</strong>.<br> If one or more enemy units that started the turn within a terrain area are destroyed you score <strong>2VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) for each objective you control (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>End of the battle:</strong><br> If no enemy units are wholly within your territory you score <strong>5VP</strong>.",
+			"Secure Asset": "In your shooting phase. One friendly unit within range of one objective (Excluding your home objective). you can use this action once per turn and it compleates at the end of your turn, if your unite controls that objective, your unit has secured the asset. <br><strong>Any batte round:</strong><br> At the end of your turn if a friendly unit secured the asset this turn you score <strong>4VP</strong>.<br> If one or more enemy units that started the turn within range of one or more central objectives are destroyed you score <strong>2VP</strong>, <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> If you control three or more objectives you score <strong>4VP</strong>.",
+			"Vital Link": "In your shooting phase. One friendly unit within range of one central objective can once per turn do this action. It compleatesat the end of your turn, if your unite controls that objective and if it do so place one of your operation markers within range of that objective. <br><strong>Any batte round:</strong><br> At the end of your turn if you control one or more central objectives you scor <strong>2VP</strong> and for each of your operation markers within range of one of those objectives you score an exta <strong>1VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong> and if one or more of those objectives is a central objective you score an extra <strong>4VP</strong>.<br> <br><strong>End of the battle:</strong><br> If you control your opponents home objective you score <strong>10VP</strong>.",
+			"Extract Relic": "In your shooting phase. One friendly unit within range of one central objective can once per turn do this action called Sensor sweep. It compleatesat the end of your turn, if your unite controls that objective and if it do so place one of your operation markers within range of that objective. <br><strong>Any batte round:</strong><br> At the end of your turn if a friendly unit preformed a Sensor sweep this turn yo score <strong>4VP</strong>.<br> If one or more enemy units that started the turn within range of one or more objectives are destroyed you score <strong>3VP</strong>.<br> Only one of your opponent's operation markers is on the battlefield, if one or more of your units are within the same terrain area as that operation marker, and no enemy units are within that terrain area you score <strong>4VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or end of your turn if its the fifth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>End of the battle:</strong><br> If only one of you opponent's operation markers is on the battlefield ,if one or more of your units are withine the same terrain area as that marker, and no enemy units are within that terrain area you score <strong>5VP</strong>.",
+            "Vanguard Operation": "In your shooting phase. One friendly unit within range of one terrain area that is within your opponent's territory can one per turn preform a vanguard operation. This compleates at the end of your turn, if no enemy units are within that tarrain area. <br><strong>Any batte round:</strong><br> At the end of your turn if a friendly unit preformed a vanguard operation this turn you score <strong>4VP</strong>.<br> If one or more enemy units were destroyed this turn you score <strong>2VP</strong>.<br>  <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.<br> <br><strong>End of the battle:</strong><br> If you control your opponent's home objective you score <strong>10VP</strong>.",
+            "Sabotage": "In your shooting phase. One unit within range of one objective (Excluding your home objective) can preform the action commit sabotage. Each unit that start this action this phase most be within range of a diffrent objective. This action compleates at the end ofyour turn if that unite controls that objective. <br><strong>Any batte round:</strong><br> At the end of your turn for each friendly unit that committed sabotage this turn you score <strong>3VP</strong>.<br> And for each of those units that is within range of one or more objectives in your opponent's terretory you score an additional <strong>2VP</strong>.<br> <br><strong>Second Battle Round onwards:</strong><br> At the end of your command phase (or the end of your turn in the fitfth battle round) if you control one or more objectives (excluding your home objective) you score <strong>4VP</strong>.",
+            "Custom Mission": "Custom battle scenario layout per player agreement."
+        };
+
+        const deploymentRulesData = {
+            "Deployment A: Search and Destroy": "Quartered deployment configuration. Players set up within opposite corners with a strict 9\" clearance envelope from dead center.",
+            "Deployment B: Crucible of Battle": "A skewed, diagonally bisected layout. Deployment lines run corner to corner across the theater.",
+            "Deployment C: Hammer and Anvil": "Short edge to short edge configuration. Creates a long expanse of neutral territory to cross before lines clash.",
+            "Deployment D: Sweeping Engagement": "Diagonal zones with widened operational corridors, causing flanks to meet almost immediately.",
+            "Deployment E: Dawn of War": "Classic long edge to long edge setup. A 24\" neutral buffer separates both armies down the center.",
+            "Deployment F: Tipping Point": "Asymmetric deployment. One commander is bottlenecked into a tighter defensive corner while the other holds a wide front."
+        };
+
+        const deploymentImagesData = {
+            "Deployment A: Search and Destroy": "image/Seach_and_Destroy.jpg",
+            "Deployment B: Crucible of Battle": "image/Crucible_of_Battle.jpg",
+            "Deployment C: Hammer and Anvil": "image/Hammer_and_Anvil.jpg",
+            "Deployment D: Sweeping Engagement": "image/Sweeping_Engagement.jpg",
+            "Deployment E: Dawn of War": "image/Dawn_of_War.jpg",
+            "Deployment F: Tipping Point": "image/Tipping_Point.jpg"
+        };
+
+        const secondaryMissionsData = {
+            "Assassinate": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of a turn.<br> One or more enemy CHARACTER models were destroyed this turn, or all enemy CHARACTER models have been destroyed during the battle. 5VP",
+            "Bring It Down": "<strong>WHEN DRAWN:</strong> If there are no enemy models With a W of 10 or more on the battlefield, vou can discard this card and draw one new Secondary Mission card. <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of a turn.<br> For each enemy model With a W of 10 or more destroyed this turn 5VP",
+            "Behind Enemy Lines": "<strong>WHEN DRAWN:</strong> If it is the first battie round, you can draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck.<br> lines <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. For each friendly unit (excluding AIRCAFT and battle-shocked units) wholly within your opponent's deployment zone. 3VP up to 5VP",
+            "Cleanse": "<strong>WHEN DRAWN:</strong> If the Plunder Secondary Mission is active for you, you can draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck.<br> CLEANSE OBJECTIVE ACTION STARTS: Your Shooting phase. UNITS: One friendly unit within range of one objective (excluding your home objective). USE LIMIT: Unlimited. Each unit that starts this action this phase must be within range of a different objective. COMPLETES: End of your turn, if that unit is controlling that objective. EFFECT: That objective is cleansed by your army. <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End ofyour turn. One objective was cleansed by your army this turn. 2VP OR Two or more objectives were cleansed by your army this turn. 5VP",
+            "Center ground": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your tum. One or more friendly units (excluding AIRCRAFT and battle-shocked units) are within 3• of the centre of the battlefield, and enerny units are within 3 inches of the centre of the battlefield. 3VP One or more friendly units (excluding AIRCRAFT and battie-shocked units) are within 3 inches of the centre OR of the battlefield, and enemy units are within 6 inches of the centre of the battlefield. 5VP.",
+            "Engage on All Fronts": "If one or more friendly units (excluding AIRCRAFT and battle-shocked units) are wholly within a table quarter, and those units are not within 6 inches of the centre of the battlefield, you have a presence in that table quarter. <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. You have a presence in three table quarters. 3VP OR You have a presence in four table quarters, 5VP",
+            "No Prisoners": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of a turn.<br> For each enemy unit destroyed this turn. 2VP (UP T0 5VP).",
+            "Overwhelming Force": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of a tumrn. For each enemy unit that started the turn within range of one or more objectives and is destroyed. 3VP (UP TO 5VP).",
+            "Secure No Man's Land": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. You control two or more objectives within No Man's Land (excluding your home objective). 5VP.",
+            "Forwars Position": "<strong>WHEN DRAWN:</strong> If it is the first battie round, you can draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck.<br> <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turne You control your opponent's home objective and/or each expansion objective. 5VP.",
+			"Plunder": "<strong>WHEN DRAWN:</strong> If the Cleanse Secondary Mission is active for you, you can draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck. PLUNDER OBJECTIVE ACTION STARTS: Your Shooting phase. UNITS: One unit within a terrain area that is not within your territory. USE LIMIT: Once per turn. COMPLETES: Immediately. EFFECT: That terrain area is plundered, <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End ofyour turn. A terrain area was plundered this turn. 5VP",
+			"Defend stronghold": "<strong>WHEN DRAWN:</strong> If it is the first battle round, draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck.<br> SECOND BATTLE ROUND ONWARDS <strong>WHEN:</strong> End of your opponent's turn or the end of the fifth battle round (whichever cornes first). You control your home objective. 3VP No enemy units are within your deployment zone. +2VP CUMULATIVE",
+			"Burden of Trust": "<strong>WHEN DRAWN/START OF YOUR TURN:</strong> For each objective, you can select one friendly unit on the battlefield to guard that objective. Until the start of your next turn, while that unit is within range of that objective and while you control that objective, that objective is guarded by your army. ANY ROUND <strong>WHEN:</strong> End of your opponent's turn or the end of the fifth battle round (whichever comes first). For each objective guarded by your army. 2VP (UP TO 5VP)",
+			"Outflank": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. One or more friendly units (excluding AIRCRAFT and battle-shocked units) are within 6 inches of one or more battlefield edges and not within your territory. 3VP OR Two or more friendly units (exciuding AIRCRAFT and battle-shocked units) are within 6 inches of opposite battlefield edges and one or more of those units is not within your territory. 5VP Designer's Note: Opposite battlefield edges are those parallel to each Other.",
+			"Display of Might": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. There are more friendly units than enemy units (excluding AIRCRAFT and battle-shocked units) wholly within No Man's Land. 2VP <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your opponent's turn. There are more friendly units than enemy units (excluding AIRCRAFT and battle-shocked units) wholly within No Manis Land. 5VP.",
+			"Beacon": "<strong>WHEN DRAWN:</strong> Select one friendly unit on the battlefield or embarked within a TRANSPORT on the battlefield to be your beacon unit. <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your opponent's turn or the end of the fifth battle round (whichever comes first). Your beacon unit is on the battlefield and not within your deployment zone. 3VP OR Your beacon unit is on the battlefield and not within your territory. 5VP.",
+        };
+		
+		const twistsData = [
+			{ title: "Night Fighting", rule: "🌪️ <strong>Night Fighting:</strong> Each unite is not voisible to enemy models unless they are within 18 inches of that unit, and each unite cannot be targeted by (Indirect Fire) Weapons unless the attacking model is whitin 18 inches of that unit." },
+			{ title: "Ruinscape", rule: "🌪️ <strong>Ruinscape:</strong> When a unit makes a normal or advance move, models in that unite have the mobile keyword until that move ends." },
+			{ title: "Martial Pride", rule: "🌪️ <strong>Martial Pride:</strong> A battleline unite can start an action in a turn in which it made an advance move. A battleline unite can shoot in a turn in which it started an action" },
+			{ title: "Scrambled Communications", rule: "🌪️ <strong>Scrambled Communications:</strong> The players exchange their Primary Mission cards." },
+			{ title: "Nowhere To Hide", rule: "🌪️ <strong>Nowhere To Hide:</strong> Terrain features do not have the solid rule." }
+		];
+
+        const turn1RestrictedCards = [
+            "Behind Enemy Lines",
+            "Center ground",
+            "Forwars Position"
+        ];
+
+        const secondaryDeck = Object.keys(secondaryMissionsData);
+        let atkDeck = [...secondaryDeck];
+        let defDeck = [...secondaryDeck];
+
+        function toggleGuide() {
+            const guide = document.getElementById('guide-content');
+            const btn = document.getElementById('guide-toggle-btn');
+            if (guide.style.display === 'none') {
+                guide.style.display = 'block';
+                btn.innerText = '✕ Close Guide';
+            } else {
+                guide.style.display = 'none';
+                btn.innerText = '📖 Quick Guide: Get Started';
+            }
+        }
+
+        function toggleHubMatchInfo() {
+            const detailsBox = document.getElementById('hub-info-details');
+            const btn = document.getElementById('hub-info-btn');
+            
+            if (detailsBox.style.display === 'none') {
+                document.getElementById('hub-p1-mission-rule-text').innerHTML = `<strong>${finalP1Mission}:</strong> ${primaryRulesData[finalP1Mission] || "No data available."}`;
+                document.getElementById('hub-p2-mission-rule-text').innerHTML = `<strong>${finalP2Mission}:</strong> ${primaryRulesData[finalP2Mission] || "No data available."}`;
+                document.getElementById('hub-deploy-rule-text').innerHTML = deploymentRulesData[finalDeployment] || "No data available.";
+                
+                const twistContainer = document.getElementById('hub-twist-details-box');
+                if (finalTwistText) {
+                    document.getElementById('hub-twist-rule-text').innerHTML = finalTwistText;
+                    twistContainer.style.display = 'block';
+                } else {
+                    twistContainer.style.display = 'none';
+                }
+
+                const imgPath = deploymentImagesData[finalDeployment] || "";
+                document.getElementById('hub-deployment-img').src = imgPath;
+
+                detailsBox.style.display = 'block';
+                btn.innerText = '✕ Hide Info & Rules';
+            } else {
+                detailsBox.style.display = 'none';
+                btn.innerText = '📋 Show Info & Rules (inc. Map)';
+            }
+        }
+
+        function calculateIndividualMission(ownChoice, opponentChoice) {
+            const combo = ownChoice + " -> " + opponentChoice;
+            switch(combo) {
+                case "Take and hold -> Take and hold": return "Battlefield Dominance";
+                case "Take and hold -> Purge the foe": return "Immovable Object";
+                case "Take and hold -> Disruption": return "Determined Acquisition";
+                case "Take and hold -> Reconnaissance": return "Purge And Secure";
+                case "Take and hold -> Priority Assets": return "Inescapable Dominion";
+                
+                case "Purge the foe -> Take and hold": return "Unstoppable Force";
+                case "Purge the foe -> Purge the foe": return "Meatgrinder";
+                case "Purge the foe -> Disruption": return "Punishment";
+                case "Purge the foe -> Reconnaissance": return "Consecrate";
+                case "Purge the foe -> Priority Assets": return "Destroyer's Wrath";
+                
+                case "Disruption -> Take and hold": return "Death Trap";
+                case "Disruption -> Purge the foe": return "Delaying Action";
+                case "Disruption -> Disruption": return "Outmanoeuvre";
+                case "Disruption -> Reconnaissance": return "Smoke And Mirrors";
+                case "Disruption -> Priority Assets": return "Locate And Deny";
+                
+                case "Reconnaissance -> Take and hold": return "Reconnaissance Sweep";
+                case "Reconnaissance -> Purge the foe": return "Triangulation";
+                case "Reconnaissance -> Disruption": return "Surveil The Foe";
+                case "Reconnaissance -> Reconnaissance": return "Gather Intel";
+                case "Reconnaissance -> Priority Assets": return "Search And Scour";
+                
+                case "Priority Assets -> Take and hold": return "Secure Asset";
+                case "Priority Assets -> Purge the foe": return "Vital Link";
+                case "Priority Assets -> Disruption": return "Extract Relic";
+                case "Priority Assets -> Reconnaissance": return "Vanguard Operation";
+                case "Priority Assets -> Priority Assets": return "Sabotage";
+                
+                default: return "Custom Mission";
+            }
+        }
+
+        const deployments = [
+            "Deployment A: Search and Destroy",
+            "Deployment B: Crucible of Battle",
+            "Deployment C: Hammer and Anvil",
+            "Deployment D: Sweeping Engagement",
+            "Deployment E: Dawn of War",
+            "Deployment F: Tipping Point"
+        ];
+
+        function showStep(stepId) {
+            document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+            document.getElementById('step-' + stepId).classList.add('active');
+        }
+
+        function goToStep2() {
+            document.getElementById('guide-content').style.display = 'none';
+            document.getElementById('guide-toggle-btn').innerText = '📖 Quick Guide: Get Started';
+
+            p1Name = document.getElementById('p1-name').value.trim() || "Player 1";
+            p2Name = document.getElementById('p2-name').value.trim() || "Player 2";
+
+            p1Choice = document.getElementById('p1-disp').value;
+            p2Choice = document.getElementById('p2-disp').value;
+
+            finalP1Mission = calculateIndividualMission(p1Choice, p2Choice);
+            finalP2Mission = calculateIndividualMission(p2Choice, p1Choice);
+
+            document.getElementById('preview-p1-label').innerText = p1Name + " Primary:";
+            document.getElementById('preview-p1-mission').innerText = finalP1Mission;
+            document.getElementById('preview-p1-rule').innerHTML = primaryRulesData[finalP1Mission] || "";
+            
+            document.getElementById('preview-p2-label').innerText = p2Name + " Primary:";
+            document.getElementById('preview-p2-mission').innerText = finalP2Mission;
+            document.getElementById('preview-p2-rule').innerHTML = primaryRulesData[finalP2Mission] || "";
+            
+            document.getElementById('p1-is-atk-btn').innerHTML = `${p1Name} is Attacker<br><small>${p2Name} becomes Def</small>`;
+            document.getElementById('p2-is-atk-btn').innerHTML = `${p2Name} is Attacker<br><small>${p1Name} becomes Def</small>`;
+
+            document.getElementById('step2-image-box').style.display = 'none';
+            showStep(2);
+        }
+
+        function rollDeployment() {
+			const randomIndex = Math.floor(Math.random() * deployments.length);
+			finalDeployment = deployments[randomIndex];
+			document.getElementById('deployment-result').innerText = finalDeployment;
+    
+			const imgPath = deploymentImagesData[finalDeployment] || "";
+			document.getElementById('step2-deployment-img').src = imgPath;
+			document.getElementById('step2-image-box').style.display = 'flex';
+
+			document.getElementById('twistDisplay').innerHTML = "";
+            finalTwistText = "";
+            finalTwistTitle = "";
+
+			const twistsEnabled = document.getElementById('enableTwists').checked;
+			if (twistsEnabled) {
+				const randomTwistObj = twistsData[Math.floor(Math.random() * twistsData.length)];
+                finalTwistText = randomTwistObj.rule;
+                finalTwistTitle = randomTwistObj.title;
+
+				document.getElementById('twistDisplay').innerHTML = `<div style="border: 1px dashed #ffcc00; padding: 10px; border-radius: 6px; background: #1a1508; margin-bottom: 10px;">🌪️ BATTLEFIELD TWIST:<br><span style="font-weight:normal; color:#cbd5e1; font-size:0.95rem;">${finalTwistText}</span></div>`;
+			}
+
+			document.getElementById('to-step-3-btn').style.display = "block";
+		}
+
+        function goToStep3() { showStep(3); }
+
+        function setRoles(p1Attacker) {
+            p1IsAttacker = p1Attacker;
+            const p1Btn = document.getElementById('p1-is-atk-btn');
+            const p2Btn = document.getElementById('p2-is-atk-btn');
+
+            if (p1IsAttacker) {
+                p1Btn.className = "role-btn selected attacker";
+                p2Btn.className = "role-btn";
+            } else {
+                p1Btn.className = "role-btn";
+                p2Btn.className = "role-btn selected defender";
+            }
+            document.getElementById('start-match-btn').style.display = "block";
+        }
+
+        function startMatch() {
+            document.getElementById('hub-p1-label').innerText = p1Name;
+            document.getElementById('hub-p2-label').innerText = p2Name;
+            document.getElementById('hub-details-p1-name').innerText = p1Name;
+            document.getElementById('hub-details-p2-name').innerText = p2Name;
+
+            document.getElementById('hub-p1-mission').innerText = finalP1Mission;
+            document.getElementById('hub-p2-mission').innerText = finalP2Mission;
+            document.getElementById('hub-deploy').innerText = finalDeployment;
+
+            const twistLine = document.getElementById('hub-twist-line');
+            if (finalTwistTitle) {
+                document.getElementById('hub-twist-title').innerText = finalTwistTitle;
+                twistLine.style.display = 'block';
+            } else {
+                twistLine.style.display = 'none';
+            }
+
+            document.getElementById('hub-info-details').style.display = 'none';
+            document.getElementById('hub-info-btn').innerText = '📋 Show Info & Rules (inc. Map)';
+
+            if (p1IsAttacker) {
+                document.getElementById('match-atk-name').innerText = p1Name;
+                document.getElementById('match-atk-disp').innerText = p1Choice;
+                document.getElementById('atk-card-mission-title').innerText = `${p1Name} Primary: ${finalP1Mission}`;
+
+                document.getElementById('match-def-name').innerText = p2Name;
+                document.getElementById('match-def-disp').innerText = p2Choice;
+                document.getElementById('def-card-mission-title').innerText = `${p2Name} Primary: ${finalP2Mission}`;
+            } else {
+                document.getElementById('match-atk-name').innerText = p2Name;
+                document.getElementById('match-atk-disp').innerText = p2Choice;
+                document.getElementById('atk-card-mission-title').innerText = `${p2Name} Primary: ${finalP2Mission}`;
+
+                document.getElementById('match-def-name').innerText = p1Name;
+                document.getElementById('match-def-disp').innerText = p1Choice;
+                document.getElementById('def-card-mission-title').innerText = `${p1Name} Primary: ${finalP1Mission}`;
+            }
+
+            currentRound = 1;
+            document.getElementById('current-round').innerText = currentRound;
+
+            scores = {
+                atk: { cp: 0, primary: 0, secondary: 0 },
+                def: { cp: 0, primary: 0, secondary: 0 }
+            };
+            updateScoreDOM();
+
+            atkDeck = [...secondaryDeck];
+            defDeck = [...secondaryDeck];
+            document.getElementById('atk-secondaries').innerHTML = '';
+            document.getElementById('def-secondaries').innerHTML = '';
+
+            showStep(4);
+        }
+
+        function changeRound(amount) {
+            currentRound += amount;
+            if (currentRound < 1) currentRound = 1;
+            if (currentRound > 5) {
+                alert("Round 5 is the final standard round. Feel free to keep counting if playing past limits!");
+            }
+            document.getElementById('current-round').innerText = currentRound;
+        }
+
+        function changeVal(role, type, amount) {
+            scores[role][type] += amount;
+            if (scores[role][type] < 0) scores[role][type] = 0;
+            updateScoreDOM();
+        }
+
+        function updateScoreDOM() {
+            document.getElementById('atk-cp').innerText = scores.atk.cp;
+            document.getElementById('atk-primary').innerText = scores.atk.primary;
+            document.getElementById('atk-secondary').innerText = scores.atk.secondary;
+            document.getElementById('atk-total-vp').innerText = scores.atk.primary + scores.atk.secondary;
+
+            document.getElementById('def-cp').innerText = scores.def.cp;
+            document.getElementById('def-primary').innerText = scores.def.primary;
+            document.getElementById('def-secondary').innerText = scores.def.secondary;
+            document.getElementById('def-total-vp').innerText = scores.def.primary + scores.def.secondary;
+        }
+
+        function drawSecondary(role) {
+            const masterDeck = (role === 'atk') ? atkDeck : defDeck;
+            const container = document.getElementById(role + '-secondaries');
+
+            if (masterDeck.length === 0) {
+                alert("The deck is empty! No more cards available to draw.");
+                return;
+            }
+
+            let eligibleCards = [...masterDeck];
+
+            if (currentRound === 1) {
+                eligibleCards = masterDeck.filter(card => !turn1RestrictedCards.includes(card));
+                if (eligibleCards.length === 0) {
+                    eligibleCards = [...masterDeck];
+                }
+            }
+
+            const randomIndex = Math.floor(Math.random() * eligibleCards.length);
+            const drawnCard = eligibleCards[randomIndex];
+
+            const masterIndex = masterDeck.indexOf(drawnCard);
+            if (masterIndex > -1) {
+                masterDeck.splice(masterIndex, 1);
+            }
+
+            const textId = role + '-' + drawnCard.replace(/\s+/g, '-').toLowerCase();
+            const wrapperId = 'wrap-' + textId;
+            const detailsId = 'details-' + textId;
+            
+            const missionExplanation = secondaryMissionsData[drawnCard];
+
+            const cardHtml = `
+                <div class="mission-card-wrapper" id="${wrapperId}">
+                    <div class="mission-card-badge" onclick="toggleMissionDetails('${detailsId}')">
+                        <span>🎯 ${drawnCard}</span>
+                        <div class="card-action-group">
+                            <button class="shuffle-back-btn" onclick="event.stopPropagation(); shuffleCardBack(\`${role}\`, \`${wrapperId}\`, \`${drawnCard}\`)">Shuffle Back</button>
+                            <button class="discard-btn" onclick="event.stopPropagation(); discardCard(\`${role}\`, \`${wrapperId}\`, \`${drawnCard}\`)">Discard / Done</button>
+                        </div>
+                    </div>
+                    <div class="mission-details-box" id="${detailsId}" style="display: none;">
+                        ${missionExplanation}
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', cardHtml);
+        }
+
+        function toggleMissionDetails(detailsBoxId) {
+            const detailsBox = document.getElementById(detailsBoxId);
+            if (detailsBox.style.display === 'none') {
+                detailsBox.style.display = 'block';
+            } else {
+                detailsBox.style.display = 'none';
+            }
+        }
+
+        function discardCard(role, wrapperElementId, cardName) {
+            const element = document.getElementById(wrapperElementId);
+            if (element) {
+                element.remove();
+            }
+            const deck = (role === 'atk') ? atkDeck : defDeck;
+            if (!deck.includes(cardName)) {
+                deck.push(cardName);
+            }
+        }
+
+        function shuffleCardBack(role, wrapperElementId, cardName) {
+            const element = document.getElementById(wrapperElementId);
+            if (element) {
+                element.remove();
+            }
+            const deck = (role === 'atk') ? atkDeck : defDeck;
+            if (!deck.includes(cardName)) {
+                deck.push(cardName);
+            }
+        }
+
+        function resetApp() {
+            if(confirm("Are you sure you want to reset the match? All current tracking data will be permanently cleared.")) {
+                document.getElementById('deployment-result').innerText = "Click to roll...";
+                document.getElementById('to-step-3-btn').style.display = "none";
+                document.getElementById('step2-image-box').style.display = "none";
+                document.getElementById('start-match-btn').style.display = "none";
+                document.getElementById('p1-is-atk-btn').className = "role-btn";
+                document.getElementById('p2-is-atk-btn').className = "role-btn";
+                finalTwistText = "";
+                finalTwistTitle = "";
+                p1IsAttacker = null;
+                showStep(1);
+            }
+        }
+    </script>
+</body>
+</html>
