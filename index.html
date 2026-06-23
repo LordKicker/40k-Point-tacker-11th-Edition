@@ -675,6 +675,8 @@
         let finalTwistTitle = ""; 
         let p1IsAttacker = null; 
         let currentRound = 1; 
+		let atkDiscard = [];
+        let defDiscard = [];
 
         let scores = {
             atk: { cp: 0, primary: 0, secondary: 0 },
@@ -736,11 +738,11 @@
             "Center ground": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your tum. One or more friendly units (excluding AIRCRAFT and battle-shocked units) are within 3• of the centre of the battlefield, and enerny units are within 3 inches of the centre of the battlefield. 3VP One or more friendly units (excluding AIRCRAFT and battie-shocked units) are within 3 inches of the centre OR of the battlefield, and enemy units are within 6 inches of the centre of the battlefield. 5VP.",
             "Engage on All Fronts": "If one or more friendly units (excluding AIRCRAFT and battle-shocked units) are wholly within a table quarter, and those units are not within 6 inches of the centre of the battlefield, you have a presence in that table quarter. <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. You have a presence in three table quarters. 3VP OR You have a presence in four table quarters, 5VP",
             "No Prisoners": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of a turn.<br> For each enemy unit destroyed this turn. 2VP (UP T0 5VP).",
-            "Overwhelming Force": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of a tumrn. For each enemy unit that started the turn within range of one or more objectives and is destroyed. 3VP (UP TO 5VP).",
+            "Overwhelming Force": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of a turn. For each enemy unit that started the turn within range of one or more objectives and is destroyed. 3VP (UP TO 5VP).",
             "Secure No Man's Land": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. You control two or more objectives within No Man's Land (excluding your home objective). 5VP.",
             "Forwars Position": "<strong>WHEN DRAWN:</strong> If it is the first battie round, you can draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck.<br> <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turne You control your opponent's home objective and/or each expansion objective. 5VP.",
 			"Plunder": "<strong>WHEN DRAWN:</strong> If the Cleanse Secondary Mission is active for you, you can draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck. PLUNDER OBJECTIVE ACTION STARTS: Your Shooting phase. UNITS: One unit within a terrain area that is not within your territory. USE LIMIT: Once per turn. COMPLETES: Immediately. EFFECT: That terrain area is plundered, <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End ofyour turn. A terrain area was plundered this turn. 5VP",
-			"Defend stronghold": "<strong>WHEN DRAWN:</strong> If it is the first battle round, draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck.<br> SECOND BATTLE ROUND ONWARDS <strong>WHEN:</strong> End of your opponent's turn or the end of the fifth battle round (whichever cornes first). You control your home objective. 3VP No enemy units are within your deployment zone. +2VP CUMULATIVE",
+			"Defend stronghold": "<strong>WHEN DRAWN:</strong> If it is the first battle round, draw one new Secondary Mission card and shuffle this card back into your Secondary Mission deck.<br> SECOND BATTLE ROUND ONWARDS <br><strong>WHEN:</strong> End of your opponent's turn or the end of the fifth battle round (whichever cornes first). You control your home objective. 3VP No enemy units are within your deployment zone. +2VP CUMULATIVE",
 			"Burden of Trust": "<strong>WHEN DRAWN/START OF YOUR TURN:</strong> For each objective, you can select one friendly unit on the battlefield to guard that objective. Until the start of your next turn, while that unit is within range of that objective and while you control that objective, that objective is guarded by your army. ANY ROUND <strong>WHEN:</strong> End of your opponent's turn or the end of the fifth battle round (whichever comes first). For each objective guarded by your army. 2VP (UP TO 5VP)",
 			"Outflank": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. One or more friendly units (excluding AIRCRAFT and battle-shocked units) are within 6 inches of one or more battlefield edges and not within your territory. 3VP OR Two or more friendly units (exciuding AIRCRAFT and battle-shocked units) are within 6 inches of opposite battlefield edges and one or more of those units is not within your territory. 5VP Designer's Note: Opposite battlefield edges are those parallel to each Other.",
 			"Display of Might": "<strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your turn. There are more friendly units than enemy units (excluding AIRCRAFT and battle-shocked units) wholly within No Man's Land. 2VP <strong>ANY BATTLE ROUND</strong><br> <strong>WHEN:</strong> End of your opponent's turn. There are more friendly units than enemy units (excluding AIRCRAFT and battle-shocked units) wholly within No Manis Land. 5VP.",
@@ -935,6 +937,11 @@
             document.getElementById('hub-p1-mission').innerText = finalP1Mission;
             document.getElementById('hub-p2-mission').innerText = finalP2Mission;
             document.getElementById('hub-deploy').innerText = finalDeployment;
+			
+			atkDeck = [...secondaryDeck];
+            defDeck = [...secondaryDeck];
+            atkDiscard = []; 
+            defDiscard = [];
 
             const twistLine = document.getElementById('hub-twist-line');
             if (finalTwistTitle) {
@@ -1072,9 +1079,9 @@
             if (element) {
                 element.remove();
             }
-            const deck = (role === 'atk') ? atkDeck : defDeck;
-            if (!deck.includes(cardName)) {
-                deck.push(cardName);
+            const discardPile = (role === 'atk') ? atkDiscard : defDiscard;
+            if (!discardPile.includes(cardName)) {
+                discardPile.push(cardName);
             }
         }
 
